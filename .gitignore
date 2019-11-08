@@ -1,0 +1,12 @@
+.idea
+venv
+*.pytest_cache
+reports/selene/*
+reports/allure/*
+*.log
+*.pyc
+
+
+##Ignore all logfiles and tempfiles
+##https://dev.to/tschaka1904/show-me-your-gitignore--4415
+##it tells Git to ignore any files names that end on .iml
