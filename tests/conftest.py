@@ -17,4 +17,9 @@ def pytest_addoption(parser):
 
 
 def pytest_configure(config):
+    """" * **pytest_configure** - Выполняется во время конфигурирования Pytest и его плагинов:
+
+    - Выполняет настройку фреймворка на основе параметров командной строки и файла **./defaults.ini**
+    - Настройку фреймворка производит класс **FrameworkConfig** из модуля **./framework/config.py**
+    - Параметры командной строки имеют больший приоритет """
     FrameworkConfig(config)

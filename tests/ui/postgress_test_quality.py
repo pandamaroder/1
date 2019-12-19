@@ -1,11 +1,13 @@
 from datetime import datetime, timedelta
 
 import allure
-import psycopg2
 import pytest
 from framework.resources.test_params.registration_data import QualityLogin, QualityParams
 from framework.ui_pages.registration_page import TimepadPage, QualityLoginPage
+
 from delayed_assert import expect, assert_expectations
+import psycopg2
+from datetime import datetime, timedelta
 
 
 @pytest.fixture
@@ -18,13 +20,13 @@ def get_city_from_postgres():
     hint_list = []
 
     # параметры подключения
-    pgsql_conf = "dbname='quality' user='postgres' password='postgres' host='192.168.10.151' port='5432'"
+    pgsql_conf = "dbname='quality' user='postgres' password='postgres' host='192.168.10.171' port='5432'"
     #  подключение к БД
     conn = psycopg2.connect(pgsql_conf)
     cur = conn.cursor()
     name = 'Avilex'
     # выбор города из БД
-    organization_select = "SELECT name FROM service.branch WHERE id = 218"
+    organization_select = "SELECT name FROM service.branch WHERE id = 377 or id = 74"
     cur.execute(organization_select)
     if cur.rowcount > 0:
 
@@ -55,23 +57,26 @@ def test_should_pass():
 
 
 @pytest.mark.usefixtures('allure_screen')
-@allure.feature('Timepad авторизация, создание нового собятия')
-class TestQualityPage:
+@allure.feature('Авторизация в отделении, при условии поиска названия Отделения в БД')
+class TestQualityGlobalPostgress:
 
-    @allure.story('Проверка поиска организации')
+    @allure.story('Проверка поиска организации & проверка последней сессии в отделении')
     @allure.testcase('http://qualitycentral.snap.dev.local/', name='Ссылка на тест-кейс')
-    def test_qyality(self, get_city_from_postgres):
+    def test_quality(self, get_city_from_postgres):
 
         page = QualityLoginPage()
         # Открыть страницу и не наебнуться
-        page.open()
+        page.openn()
         #  Заполнить форму авторизации и Нажать кнопку 'Войти' и ахуеть
         page.login(QualityLogin.login, QualityLogin.password)
         print(QualityLogin.login, QualityLogin.password)
         # Проверить что авторизовались успешно (появилась cтраница NGINX)
-        page.open3()
+        page.openn3()
         # Заполнить поле 'наименование' (ввести значение 'мос')
         #     проверить что в выпадающем списке содержаться подсказки (Москва, Мосальск, Московский, Мостовской, Мосты)
         #     нажать на подсказку 'Москва'
         #     проверить что выбранное значение появилось в поле
         page.search_organization(get_city_from_postgres[0],get_city_from_postgres[1])
+        assert_expectations()
+
+

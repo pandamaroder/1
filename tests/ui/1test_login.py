@@ -3,7 +3,7 @@ import pytest
 from framework.resources.test_params.login_data import BaseLogin
 from framework.ui_pages.login_page import LoginPage
 from framework.resources.test_params.registration_data import QualityLogin
-from framework.ui_pages.RQualityLoginPage import QualityLoginPage
+
 
 @pytest.mark.positive
 @pytest.mark.usefixtures('allure_screen')

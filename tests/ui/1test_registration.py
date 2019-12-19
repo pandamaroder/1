@@ -10,6 +10,9 @@ from framework.resources.test_params.registration_data import TimepadLogin, Time
 from framework.ui_pages.registration_page import TimepadPage, QualityLoginPage
 from datetime import datetime, timedelta
 
+from delayed_assert import assert_expectations
+
+
 @pytest.mark.positive
 @pytest.mark.usefixtures('allure_screen')
 @allure.feature('smd.mos.ru Регистрация')
@@ -149,8 +152,8 @@ class TestTimepad:
         page.login(TimepadLogin.email, TimepadLogin.password)
         print(TimepadLogin.email, TimepadLogin.password)
         # Проверить что авторизовались успешно (появилась ссылка на личный кабинет)
-        page.check_auth(TimepadLogin.user_name)
-        print(page.check_auth)
+        #page.check_auth(TimepadLogin.user_name)
+        #print(page.check_auth)
         # Нажать кнопку 'Опубликовать событие'
         new_event_page = page.create_event_button_click()
         # Заполнить поле 'Название'
@@ -183,30 +186,36 @@ class TestTimepad:
         new_event_page.create_event()
 
 
+@pytest.mark.GlobalRegress
+@pytest.mark.usefixtures('allure_screen')
+@allure.feature('QUALITY GLOBAL REGRESS')
+class TestQualityGlobal:
 
-#@pytest.mark.usefixtures('allure_screen')
-#@allure.feature('QUALITY GLOBAL')
-class TestQuality1:
-
-    #@allure.story('Проверка авторизации')
+    @allure.story('Проверка авторизации на Глобальном сервере')
     #@allure.testcase('http://qualitycentral.dev.local', name='Ссылка на тест-кейс в тест-линке')
-    def test_quality(self):
+    def test_qualityglobal(self):
         """
         Открыть страницу http://qualitycentral.dev.local
-        Нажать кнопку 'Войти'
         Заполнить форму авторизации
+        Нажать кнопку 'Войти'
         Проверить что авторизовались успешно (перекинуло на nginx)
-
+        Открыть страницу с разделом Статистика (Первая после успешной авторизации)
+        Перейти в раздел Отделения
+        Проверить поиск по наименованию Отделения
+        Переход в Отделение
+        Переход в раздел Сессии Обслуживания
+        Проверка выбора значения из выпадающего списка для поля "Рабочая станция"
+        Проверка фильтрации списка сессий с учетом параметра "Рабочая станция"
+        Переход на страницу Всех Отделений
+        Проверка выбора значения из выпадающего списка для поля "Округ"
+        Проверка фильтрации списка Отделений по параметру "District"
         """
 
         page = QualityLoginPage()
-        # Открыть страницу и не наебнуться
         page.open()
-        #  Заполнить форму авторизации и Нажать кнопку 'Войти' и ахуеть
         page.login(QualityLogin.login, QualityLogin.password)
         print(QualityLogin.login, QualityLogin.password)
-        # Проверить что авторизовались успешно (появилась cтраница NGINX)
-        page.open2()
+        page.open3()
         page.go_to_branches()
                 # Проверка на поиск отделения
         #page.set_organization(input_text, hint_list)
@@ -218,3 +227,80 @@ class TestQuality1:
         #page.clear_BranchName()
         page.select_District(QualityParams.District)
 
+
+@pytest.mark.usefixtures('allure_screen')
+@allure.feature('Авторизация в отделении, при условии поиска названия Отделения в БД')
+class TestQualityGlobalPostgress:
+    """
+    ИЗМЕНИТЬ ОПИСАНИЕ
+    Открыть страницу http://quality.dev.local
+    Заполнить форму авторизации
+    Нажать кнопку 'Войти'
+    Проверить что авторизовались успешно (перекинуло на nginx)
+    Открыть страницу с разделом Обновления
+    Кликнуть на поле "Канал Обновления"
+    Выбрать канал обновления "Aльфа"
+    Записать значение поля в переменную
+      Перейти в раздел Устройства
+      Записать id девайса из списка
+       Создать рест запрос к информации о канале обновления для id
+       Записать значение в переменную
+       ПРОВЕРКА ЗАДАНИЯ КАНАЛА ОБНОВЛЕНИЯ ДЛЯ ПЛАНШЕТОВ В РАЗДЕЛЕ ОБНОВЛЕНИЯ
+         Сравнить значение выбранного канала обновления для всех устройств отделения и значение канала обновления для устройства = применение настроек
+    """
+
+    @allure.story('Проверка поиска организации & проверка последней сессии в отделении')
+    @allure.testcase('http://qualitycentral.snap.dev.local/', name='Ссылка на тест-кейс')
+    def test_quality(self, get_city_from_postgres):
+
+        page = QualityLoginPage()
+        # Открыть страницу и не наебнуться
+        page.openn()
+        #  Заполнить форму авторизации и Нажать кнопку 'Войти' и ахуеть
+        page.login(QualityLogin.login, QualityLogin.password)
+        print(QualityLogin.login, QualityLogin.password)
+        # Проверить что авторизовались успешно (появилась cтраница NGINX)
+        page.openn3()
+        # Заполнить поле 'наименование' (ввести значение 'мос')
+        #     проверить что в выпадающем списке содержаться подсказки (Москва, Мосальск, Московский, Мостовской, Мосты)
+        #     нажать на подсказку 'Москва'
+        #     проверить что выбранное значение появилось в поле
+        page.search_organization(get_city_from_postgres[0],get_city_from_postgres[1])
+        assert_expectations()
+
+
+@pytest.mark.LocalUpdateChannel
+@pytest.mark.usefixtures('allure_screen')
+@allure.feature('QUALITY LOCAL')
+@allure.feature('ПРОВЕРКА ЗАДАНИЯ КАНАЛА ОБНОВЛЕНИЯ ДЛЯ ПЛАНШЕТОВ В РАЗДЕЛЕ ОБНОВЛЕНИЯ')
+class TestQualityLocal:
+
+    @allure.story('Проверка авторизации на Локальном сервере')
+    #@allure.testcase('http://qualit.dev.local', name='Ссылка на тест-кейс в тест-линке')
+    def test_qualitylocal(self):
+        """
+        Открыть страницу http://quality.dev.local
+        Заполнить форму авторизации
+        Нажать кнопку 'Войти'
+        Проверить что авторизовались успешно (перекинуло на nginx)
+        Открыть страницу с разделом Обновления
+        Кликнуть на поле "Канал Обновления"
+        Выбрать канал обновления "Aльфа"
+        Записать значение поля в переменную
+          Перейти в раздел Устройства
+          Записать id девайса из списка
+           Создать рест запрос к информации о канале обновления для id
+           Записать значение в переменную
+           ПРОВЕРКА ЗАДАНИЯ КАНАЛА ОБНОВЛЕНИЯ ДЛЯ ПЛАНШЕТОВ В РАЗДЕЛЕ ОБНОВЛЕНИЯ
+             Сравнить значение выбранного канала обновления для всех устройств отделения и значение канала обновления для устройства = применение настроек
+        """
+
+        page = QualityLoginPage()
+        page.open_local()
+        page.login(QualityLogin.login, QualityLogin.password)
+        print(QualityLogin.login, QualityLogin.password)
+        page.open2_local()
+        page.goto_updates()
+        page.updatechannel_select()
+        page.gotodevices()
+        page.checkDeviceChannel()
